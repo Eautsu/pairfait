@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pair'fait !</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff8e7; --ink:#1d1d1f; --line:#222; --accent:#3a86ff; --accent2:#ff7b00; --title:#3a2e8c;
+  --ok:#2e9d5b; --ko:#d64545; --p0:#3a86ff; --p1:#ff5d8f; --soft:#ffe3b3;
+  --g-add:#ff9f1c; --g-mix:#2ec4b6; --g-mul:#9b5de5; --g-num:#ef476f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Fredoka","Trebuchet MS",Arial,sans-serif;color:var(--ink);overflow:hidden;
+  background-color:var(--bg);
+  background-image:radial-gradient(#ffd166 2px,transparent 2.5px),radial-gradient(#a0e7e5 2px,transparent 2.5px);
+  background-size:46px 46px;background-position:0 0,23px 23px}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.screen{display:none;height:100vh;height:100dvh}
+.screen.on{display:flex;flex-direction:column}
+
+/* Bandeaux */
+.bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,.93);border-bottom:3px solid var(--soft);flex-wrap:wrap;position:relative;z-index:5}
+.logo{font-size:28px;font-weight:700;color:var(--title);white-space:nowrap}
+.logo span{color:var(--accent2);display:inline-block;animation:wiggle 2.5s infinite}
+@keyframes wiggle{0%,80%,100%{transform:rotate(0)}85%{transform:rotate(-20deg)}90%{transform:rotate(20deg)}}
+.stat{background:#fff;border:2px solid var(--soft);border-radius:999px;padding:4px 12px;font-weight:700;white-space:nowrap}
+.stat.best{background:#fff3c4;border-color:#ffd166;color:#8a5a00}
+.stat.chrono{font-size:22px;padding:2px 16px;background:#eaf2ff;border-color:#b9d2ff;color:#1d4fb8}
+.stat.chrono.hurry{background:#ffe1e1;border-color:#ffb3b3;color:#c62828;animation:pulse .6s infinite}
+.spacer{flex:1}
+.btn{border:3px solid var(--line);background:#fff;border-radius:999px;padding:6px 16px;font-weight:700;color:var(--ink)}
+.btn:hover{background:#faf7f0}
+.btn.primary{background:linear-gradient(180deg,#ff9f1c,#ff7b00);border-color:#e86a00;color:#fff;box-shadow:0 5px 0 #c45800;transform:translateY(-2px)}
+.btn.primary:active{box-shadow:0 1px 0 #c45800;transform:translateY(2px)}
+.btn.big{font-size:26px;padding:8px 36px}
+.btn.small{padding:2px 10px;font-size:14px;border-width:2px}
+#go{animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{scale:1}50%{scale:1.06}}
+
+/* Menu */
+#setup{overflow:auto}
+#setup .bar{position:sticky;top:0}
+.setupWrap{max-width:980px;margin:0 auto;padding:16px 16px 40px;width:100%}
+.hero{text-align:center;margin:4px 0 14px;font-size:22px;color:var(--title);font-weight:600}
+.panel{background:#fff;border:3px solid var(--soft);border-radius:24px;box-shadow:0 4px 0 var(--soft);padding:14px 18px;margin-bottom:14px}
+.panel h2{font-size:22px;color:var(--title);margin:0 0 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.p-add{border-color:#ffd8a8}.p-mix{border-color:#bdf0ea}.p-mul{border-color:#dcc7f7}.p-num{border-color:#fbc4d1}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode{border:3px solid #eee;border-radius:22px;padding:12px 14px;background:#fff;text-align:left;transition:transform .15s}
+.mode:hover{transform:translateY(-3px)}
+.mode b{font-size:23px;color:var(--title);display:block;margin-bottom:4px}
+.mode small{color:#555;font-size:15px;line-height:1.35;display:block}
+.mode.on{border-color:var(--accent);background:#eaf2ff;box-shadow:0 5px 0 #b9d2ff}
+.opts{display:none;gap:12px 18px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.opts.on{display:flex}
+.opts label{font-weight:700;display:flex;gap:8px;align-items:center}
+.opts input,.opts select{border:3px solid var(--soft);border-radius:12px;padding:5px 10px;background:#fff}
+.opts input.name{font-size:20px;width:180px}
+.common{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:12px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:3px solid var(--line);background:#fff;border-radius:16px;padding:5px 14px;font-weight:700;font-size:20px;min-width:52px}
+.chip .sub{font-weight:500;font-size:13px;opacity:.85}
+.chip.on{box-shadow:0 3px 0 rgba(0,0,0,.2)}
+#g-add .chip{border-color:var(--g-add);color:#b35f00}#g-add .chip.on{background:var(--g-add);color:#fff}
+#g-mix .chip{border-color:var(--g-mix);color:#13756c}#g-mix .chip.on{background:var(--g-mix);color:#fff}
+#g-mul .chip{border-color:var(--g-mul);color:#6a2fb8}#g-mul .chip.on{background:var(--g-mul);color:#fff}
+#g-num .chip{border-color:var(--g-num);color:#b8213f}#g-num .chip.on{background:var(--g-num);color:#fff}
+.card.g-num{--gc:var(--g-num)}
+.val svg{display:block;width:calc(var(--cw) * .9);height:calc(var(--cw) * .6)}
+.summary{color:#555;font-size:16px;flex:1}
+.domains{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.domain{border:4px solid #eee;border-radius:26px;background:#fff;padding:14px 16px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .15s}
+.domain span{font-size:40px}.domain b{font-size:28px;color:var(--title)}.domain small{color:#666;font-size:15px}
+.domain:hover{transform:translateY(-3px)}
+.domain.on{border-color:var(--accent2);background:#fff4e8;box-shadow:0 6px 0 #ffc48a}
+.repRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0}
+.repRow > b{width:140px;color:var(--title)}
+#repB .chip,#repH .chip,#forms .chip{border-color:var(--g-num);color:#b8213f;font-size:17px}
+#repB .chip.on,#repH .chip.on,#forms .chip.on{background:var(--g-num);color:#fff}
+.repHelp{color:#666;font-size:14px;margin:6px 0 0}
+.val .nt{display:block;white-space:normal;text-align:center;line-height:1.08;padding:0 4px}
+.val .nt.s1{font-size:calc(var(--cw) * .3)}.val .nt.s2{font-size:calc(var(--cw) * .19)}
+.val .nt.s3{font-size:calc(var(--cw) * .14)}.val .nt.s4{font-size:calc(var(--cw) * .11)}
+
+/* Plateaux */
+.area{flex:1;min-height:0;padding:10px 12px;display:flex;flex-direction:column}
+.grid{flex:1;min-height:0;display:grid;gap:10px;justify-content:center;align-content:center}
+.zoneLabel{font-weight:700;color:var(--title);font-size:16px;text-transform:uppercase;letter-spacing:.8px;margin:0 0 4px 2px}
+
+/* Cartes */
+.card{--gc:var(--accent);width:var(--cw);height:calc(var(--cw) / 1.5);position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:opacity .4s,scale .4s}
+.card.g-add{--gc:var(--g-add)} .card.g-mix{--gc:var(--g-mix)} .card.g-mul{--gc:var(--g-mul)}
+.face{position:absolute;inset:0;border-radius:calc(var(--cw) * .11);display:flex;align-items:center;justify-content:center;
+  background:#fff;border:max(2px, calc(var(--cw) * .014)) solid var(--line);box-shadow:0 4px 0 rgba(0,0,0,.12);transition:background .2s,border-color .2s,box-shadow .2s,transform .15s}
+.card:not(.done):hover .face{transform:translateY(-2px)}
+.badge{position:absolute;top:calc(var(--cw) * .03);left:calc(var(--cw) * .03);min-width:calc(var(--cw) * .14);height:calc(var(--cw) * .14);padding:0 3px;border-radius:999px;
+  font-size:max(9px, calc(var(--cw) * .055));display:flex;align-items:center;justify-content:center;font-weight:700;background:var(--gc);color:#fff;font-family:Arial,Helvetica,sans-serif}
+.val{font-weight:900;font-family:Arial,Helvetica,sans-serif;line-height:1;white-space:nowrap}
+.op .val{font-size:calc(var(--cw) * .25)}
+.op .val .half{display:block;font-size:.5em;font-weight:700;margin-bottom:.08em;text-align:center}
+.op .val:has(.half){text-align:center;line-height:1}
+.res .val{font-size:calc(var(--cw) * .32)}
+u{text-decoration-thickness:.09em;text-underline-offset:.1em}
+.card.sel .face{box-shadow:0 0 0 5px var(--accent2),0 6px 0 rgba(0,0,0,.12);transform:translateY(-4px)}
+.card.good .face{background:#d8f8e1;border-color:var(--ok)}
+.card.good{animation:pop .5s}
+.card.bad .face{background:#fbe1e1;border-color:var(--ko)}
+.card.bad{animation:shake .4s}
+@keyframes pop{0%{scale:1}40%{scale:1.15}100%{scale:1}}
+@keyframes shake{0%,100%{translate:0}20%{translate:-7px}40%{translate:7px}60%{translate:-5px}80%{translate:5px}}
+.card.done{opacity:0;scale:.4;pointer-events:none}
+.card .rev{position:absolute;top:calc(var(--cw) * .03);right:calc(var(--cw) * .05);font-size:max(11px, calc(var(--cw) * .09))}
+.lockNote{color:#c62828;font-weight:700}
+.helpBox{text-align:left;font-size:17px;line-height:1.45}
+.helpBox h3{color:var(--title);margin:14px 0 4px;font-size:21px}
+.helpBox ul{margin:4px 0;padding-left:22px}
+.helpBox .teacher{background:#f4f1ea;border-radius:16px;padding:6px 14px 10px;margin-top:14px}
+.helpTabs{display:flex;gap:8px;justify-content:center;margin:4px 0 6px}
+
+/* Duel */
+#dBoard{flex:1}
+.hands{height:36vh;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.hand{background:#fff;border:3px solid var(--soft);border-radius:24px;padding:8px 10px;display:flex;flex-direction:column;min-height:0;transition:border-color .2s,opacity .2s}
+.hand .hhead{display:flex;align-items:center;gap:8px;font-weight:700;font-size:19px;margin-bottom:4px}
+.hand .dot{width:14px;height:14px;border-radius:50%}
+.hand .pli{margin-left:auto;font-size:15px;background:var(--bg);border-radius:999px;padding:2px 10px}
+.hand.active{border-color:var(--pc);box-shadow:0 5px 0 var(--pc)}
+.hand.waiting{opacity:.55}
+.hand.waiting .card{cursor:default}
+.hand .empty{margin:auto;color:#888;font-style:italic}
+.turn{font-weight:700;font-size:18px;padding:4px 14px;border-radius:999px;color:#fff;white-space:nowrap;box-shadow:0 3px 0 rgba(0,0,0,.15);animation:pulse 1.6s infinite}
+
+/* Messages, fenêtres */
+#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%) translateY(-20px);background:var(--ink);color:#fff;padding:10px 24px;border-radius:999px;font-weight:700;font-size:24px;opacity:0;transition:.25s;pointer-events:none;z-index:20;white-space:nowrap;box-shadow:0 5px 0 rgba(0,0,0,.15)}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{background:var(--ok)}
+#toast.ko{background:var(--ko)}
+.modal{position:fixed;inset:0;background:rgba(20,20,20,.45);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}
+.modal.on{display:flex}
+.box{background:#fff;border:5px solid #ffd166;border-radius:30px;padding:20px 24px;max-width:680px;width:100%;max-height:90vh;overflow:auto;text-align:center}
+.box h2{font-size:36px;margin:0 0 6px;color:var(--title)}
+.box .big{font-size:21px;margin:6px 0 10px}
+.box .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.stars{font-size:46px;letter-spacing:6px;margin:4px 0}
+.stars span{display:inline-block;animation:starIn .5s both}
+@keyframes starIn{from{transform:scale(0) rotate(-90deg)}to{transform:scale(1) rotate(0)}}
+.scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin:10px 0 6px}
+.scoreCard{border:3px solid var(--soft);border-radius:18px;padding:10px 12px;text-align:left}
+.scoreCard.win{border-color:var(--accent2);background:#fdf3ec}
+.scoreCard h3{margin:0 0 4px;font-size:20px}
+.scoreCard .n{font-size:28px;font-weight:700}
+.scoreCard ul{margin:4px 0 0;padding-left:18px;font-size:16px}
+.hist{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+.hist span{background:#f4f1ea;border-radius:10px;padding:2px 9px;font-weight:700}
+.hist span.last{background:#ffd166}
+.recWho{text-align:left;margin:14px 0 4px;font-size:22px;color:var(--title);display:flex;align-items:center;gap:8px}
+.recTable{width:100%;border-collapse:collapse;text-align:left;font-size:16px}
+.recTable th{font-size:14px;color:#777;font-weight:600;padding:3px 8px;border-bottom:2px solid #f3e6c8}
+.recTable td{padding:5px 8px;border-bottom:1px solid #f3e6c8;vertical-align:top}
+.recTable td:first-child{font-weight:700}
+.recEmpty{color:#999;font-style:italic}
+.confetti{position:fixed;top:-20px;width:12px;height:16px;z-index:40;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+@media (max-width:700px){
+  .modes,.scores,.domains{grid-template-columns:1fr}
+  .hands{height:40vh}
+  .logo{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ MENU ============ -->
+<section id="setup" class="screen on">
+  <div class="bar">
+    <div class="logo">Pair<span>'</span>fait !</div>
+    <div class="summary" id="summary"></div>
+    <div class="stat best" id="setBest" style="display:none"></div>
+    <button class="btn" id="helpBtn">❓ Aide</button>
+    <button class="btn" id="recBtn">🏆 Records</button>
+    <button class="btn primary big" id="go">Jouer !</button>
+  </div>
+  <div class="setupWrap">
+    <div class="hero">🃏 Trouve les cartes qui vont ensemble ! 🎯</div>
+
+    <div class="domains">
+      <button class="domain" data-domain="tables"><span>🔢</span><b>Les tables</b><small>additions, doubles, moitiés, multiplications</small></button>
+      <button class="domain" data-domain="num"><span>🧱</span><b>La numération</b><small>dizaines et unités, de 10 à 99</small></button>
+    </div>
+
+    <div class="panel">
+      <h2>1. Mode de jeu</h2>
+      <div class="modes">
+        <button class="mode on" data-mode="visible"><b>👀 Seul : cartes visibles</b><small>Le plateau en haut, tes cartes en bas. Touche une carte puis celle qui va avec. Attention aux pièges !</small></button>
+        <button class="mode" data-mode="duo"><b>👫 À deux : le duel</b><small>Le plateau au milieu, les cartes partagées entre les deux joueurs. Chacun son tour, on fait une association.</small></button>
+      </div>
+      <div class="opts" id="optVis">
+        <label>Ton prénom <input class="name" id="who" maxlength="14" placeholder="Prénom"></label>
+        <label>Partie
+          <select id="dur">
+            <option value="libre">tout associer, sans limite de temps</option>
+            <option value="chrono">Top chrono : 1 minute</option>
+          </select>
+        </label>
+      </div>
+      <div class="opts" id="optDuo">
+        <label>Joueur 1 <input class="name" id="n0" maxlength="14" value="Joueur 1"></label>
+        <label>Joueur 2 <input class="name" id="n1" maxlength="14" value="Joueur 2"></label>
+        <label>Le gagnant est
+          <select id="winRule">
+            <option value="first">le premier qui n'a plus de cartes</option>
+            <option value="most">celui qui a le plus de cartes dans son pli</option>
+          </select>
+        </label>
+        <label id="errLab">En cas d'erreur, la carte
+          <select id="errRule">
+            <option value="keep">revient dans la main</option>
+            <option value="lose">est perdue</option>
+          </select>
+        </label>
+      </div>
+      <div class="common">
+        <label><input type="checkbox" id="traps"> Ajouter des pièges sur le plateau (on ne peut plus trouver par élimination)</label>
+      </div>
+    </div>
+
+    <div class="panel p-add" data-dom="tables">
+      <h2>2. Tables d'addition <button class="btn small" data-all="add">tout</button><button class="btn small" data-none="add">aucune</button></h2>
+      <div class="chips" id="g-add"></div>
+    </div>
+    <div class="panel p-mix" data-dom="tables">
+      <h2>3. Répertoire additif, doubles et moitiés <button class="btn small" data-all="mix">tout</button><button class="btn small" data-none="mix">aucune</button></h2>
+      <div class="chips" id="g-mix"></div>
+    </div>
+    <div class="panel p-mul" data-dom="tables">
+      <h2>4. Tables de multiplication <button class="btn small" data-all="mul">tout</button><button class="btn small" data-none="mul">aucune</button></h2>
+      <div class="chips" id="g-mul"></div>
+    </div>
+    <div class="panel p-num" data-dom="num">
+      <h2>2. Les nombres <button class="btn small" data-all="num">tout</button><button class="btn small" data-none="num">aucun</button></h2>
+      <div class="chips" id="g-num"></div>
+    </div>
+    <div class="panel p-num" data-dom="num">
+      <h2>3. Les représentations</h2>
+      <div class="repRow"><b>Sur le plateau</b><div class="chips" id="repB"></div></div>
+      <div class="repRow"><b>Dans les mains</b><div class="chips" id="repH"></div></div>
+      <div class="repRow"><b>Les formes</b><div class="chips" id="forms"></div></div>
+      <p class="repHelp">Tu peux en cocher plusieurs : chaque carte prend une forme au hasard parmi celles cochées.
+        Les formes concernent les décompositions et les unités de numération. « Dans le désordre » teste la <b>position</b> des chiffres,
+        « avec échange » teste l'<b>échange</b> 10 u = 1 d : le bilan sépare les deux.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SEUL : CARTES VISIBLES ============ -->
+<section id="vis" class="screen">
+  <div class="bar">
+    <div class="logo">Pair<span>'</span>fait !</div>
+    <div class="stat" id="vWho"></div>
+    <div class="stat" id="vPairs"></div>
+    <div class="stat" id="vErr"></div>
+    <div class="stat" id="vTime"></div>
+    <div class="stat best" id="vBest"></div>
+    <div class="spacer"></div>
+    <button class="btn help" title="Aide">❓</button>
+    <button class="btn mute" title="Son">🔊</button>
+    <button class="btn" data-act="replay">↻ Rejouer</button>
+    <button class="btn" data-act="menu">🏠 Menu</button>
+  </div>
+  <div class="area">
+    <div class="zoneLabel" id="vLabRes">Les résultats</div>
+    <div class="grid" id="vRes"></div>
+    <div class="zoneLabel" id="vLabOps" style="margin-top:10px">Les calculs</div>
+    <div class="grid" id="vOps"></div>
+  </div>
+</section>
+
+<!-- ============ À DEUX : LE DUEL ============ -->
+<section id="duo" class="screen">
+  <div class="bar">
+    <div class="logo">Pair<span>'</span>fait !</div>
+    <div class="turn" id="dTurn"></div>
+    <div class="stat" id="dLeft"></div>
+    <div class="spacer"></div>
+    <button class="btn help" title="Aide">❓</button>
+    <button class="btn mute" title="Son">🔊</button>
+    <button class="btn" data-act="replay">↻ Rejouer</button>
+    <button class="btn" data-act="menu">🏠 Menu</button>
+  </div>
+  <div class="area">
+    <div class="zoneLabel" id="dLab">Le plateau : les résultats</div>
+    <div class="grid" id="dBoard"></div>
+    <div class="hands">
+      <div class="hand" id="h0"><div class="hhead"><span class="dot"></span><span class="hn"></span><span class="pli"></span></div><div class="grid hg"></div></div>
+      <div class="hand" id="h1"><div class="hhead"><span class="dot"></span><span class="hn"></span><span class="pli"></span></div><div class="grid hg"></div></div>
+    </div>
+  </div>
+</section>
+
+<div id="toast"></div>
+<div class="modal" id="modal"><div class="box" id="mbox"></div></div>
+
+<script>
+/* ================== LES JEUX DE CARTES ================== */
+const DECKS = [];
+for (let n = 2; n <= 9; n++)
+  DECKS.push({id:'a'+n, group:'add', label:'+'+n, badge:'+'+n, ops:[1,2,3,4,5,6,7,8,9].map(k => ({a:n, b:k, sym:'+'}))});
+// Cartes T du répertoire additif, regroupées par compétence (les 55 cartes sont toutes présentes)
+[
+  ['R1', 'Sommes jusqu\u2019à 5',        ['0+0','1+0','1+1','0+2','2+1','0+3','3+1','2+2','4+0','4+1','3+2','0+5']],
+  ['R2', 'Sommes de 6 à 10',            ['6+0','5+1','4+2','3+3','0+7','1+6','2+5','3+4','0+8','7+1','6+2','5+3','4+4',
+                                         '0+9','1+8','2+7','3+6','4+5','9+1','8+2','7+3','6+4','5+5']],
+  ['R3', 'Passage de la dizaine (11 à 18)', ['2+9','3+8','4+7','5+6','3+9','4+8','5+7','6+6','4+9','5+8','6+7','5+9','6+8','7+7',
+                                         '9+6','8+7','9+7','8+8','9+8','9+9']],
+  ['R4', 'Les doubles',                 ['0+0','1+1','2+2','3+3','4+4','5+5','6+6','7+7','8+8','9+9']]
+].forEach(([id, sub, list]) => DECKS.push({id, group:'mix', label:sub, sub:`${list.length} cartes`, badge:'T',
+  ops:list.map(s => { const [a,b] = s.split('+').map(Number); return {a, b, sym:'+'}; })}));
+// Presque doubles : n + (n+1), dans les deux sens
+DECKS.push({id:'R5', group:'mix', label:'Les presque doubles', sub:'16 cartes', badge:'T',
+  ops:[1,2,3,4,5,6,7,8].flatMap(n => [{a:n, b:n+1, sym:'+'}, {a:n+1, b:n, sym:'+'}])});
+// Moitiés des nombres pairs jusqu'à 20
+DECKS.push({id:'R6', group:'mix', label:'Les moitiés', sub:'10 cartes', badge:'½',
+  ops:[2,4,6,8,10,12,14,16,18,20].map(n => ({a:n, b:2, sym:'½'}))});
+for (let n = 2; n <= 10; n++)
+  DECKS.push({id:'m'+n, group:'mul', label:'×'+n, badge:'×'+n, ops:[1,2,3,4,5,6,7,8,9].map(k => ({a:n, b:k, sym:'×'}))});
+
+// Numération « Les deux font la paire » : barres de dix et cubes ↔ nombre (10 à 99)
+[10, 20, 30, 40, 50, 60, 70, 80, 90].forEach(t => DECKS.push({id:'n' + t, group:'num', label:`${t} à ${t + 9}`, badge:'N',
+  ops:[0,1,2,3,4,5,6,7,8,9].map(u => ({a:t + u, b:0, sym:'num'}))}));
+
+/* ================== OUTILS ================== */
+const $ = s => document.querySelector(s);
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const plural = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// 6 et 9 soulignés comme sur les cartes papier
+const num = (n, ul) => ul ? `<u>${n}</u>` : `${n}`;
+const calc = o => o.sym === '+' ? o.a + o.b : o.sym === '×' ? o.a * o.b : o.sym === 'num' ? o.a : o.a / 2;
+const opHTML = o => { if (o.sym === 'num') return numSVG(o.a); if (o.sym === '½') return `<span class="half">moitié de</span> ${o.a}`; const ul = [6,9].includes(o.a) && [6,9].includes(o.b); return `${num(o.a, ul)} ${o.sym} ${num(o.b, ul)}`; };
+const opText = o => o.sym === 'num' ? String(o.a)
+                  : o.sym === '½' ? `moitié de ${o.a}` : `${o.a} ${o.sym} ${o.b}`;
+// Dessin en barres de dix et cubes, avec une disposition différente à chaque partie (on compte, on ne mémorise pas l'image)
+function numSVG(n){
+  const tens = Math.floor(n / 10), units = n % 10, s = tens > 5 ? 6.5 : 7.5, W = 150, H = 100;
+  const sq = (x, y) => `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${s}" height="${s}"/>`;
+  const rod = (x, y, vertical, rot) => {
+    let c = ''; for (let i = 0; i < 10; i++) c += vertical ? sq(x, y + i * s) : sq(x + i * s, y);
+    const cx = vertical ? x + s / 2 : x + 5 * s, cy = vertical ? y + 5 * s : y + s / 2;
+    return `<g transform="rotate(${rot} ${cx.toFixed(1)} ${cy.toFixed(1)})">${c}</g>`;
+  };
+  const jit = a => (Math.random() * 2 - 1) * a;
+  let out = '', zone;   // zone libre pour les cubes : [x0, y0, x1, y1]
+  const layout = tens > 5 ? pick(['left', 'right']) : tens > 0 ? pick(['left', 'right', 'top', 'bottom']) : 'none';
+  const vertical = layout === 'left' || layout === 'right';
+  // plus de 5 barres : plus fines, bien droites, et groupées par 5 avec un espace (on voit « 5 et encore 3 »)
+  const gap = tens > 5 ? 10 : 15, grp = tens > 5 ? 8 : 0, off = i => i * gap + (i >= 5 ? grp : 0);
+  const band = tens > 5 ? off(tens - 1) + s + 6 : Math.max(tens, 1) * gap;
+  for (let i = 0; i < tens; i++) {
+    const rot = tens > 4 ? 0 : jit(5);
+    const y0 = tens > 5 ? 17 : 12;
+    if (layout === 'left')   out += rod(8 + off(i), y0, true, rot);
+    if (layout === 'right')  out += rod(W - 8 - s - off(i), y0, true, rot);
+    if (layout === 'top')    out += rod(37, 6 + i * gap, false, rot);
+    if (layout === 'bottom') out += rod(37, H - 6 - s - i * gap, false, rot);
+  }
+  if (layout === 'left')        zone = [8 + band, 6, W - 6, H - 6];
+  else if (layout === 'right')  zone = [6, 6, W - 8 - band, H - 6];
+  else if (layout === 'top')    zone = [6, 6 + band, W - 6, H - 6];
+  else if (layout === 'bottom') zone = [6, 6, W - 6, H - 6 - band];
+  else zone = [10, 10, W - 10, H - 10];
+  // cubes dans des cases tirées au hasard, légèrement décalés et penchés
+  const cw = tens > 5 ? 13 : 17, ch = tens > 5 ? 15 : 17, cols = Math.max(1, Math.floor((zone[2] - zone[0]) / cw)), rows = Math.max(1, Math.floor((zone[3] - zone[1]) / ch));
+  const cells = shuffle([...Array(cols * rows).keys()]).slice(0, units);
+  cells.forEach(k => {
+    const x = zone[0] + (k % cols) * cw + (cw - s) / 2 + jit(3), y = zone[1] + Math.floor(k / cols) * ch + (ch - s) / 2 + jit(3);
+    out += `<g transform="rotate(${jit(12).toFixed(0)} ${(x + s / 2).toFixed(1)} ${(y + s / 2).toFixed(1)})">${sq(x, y)}</g>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" fill="#fff" stroke="#1d1d1f" stroke-width="1.1" role="img" aria-label="${tens} barres et ${units} cubes">${out}</svg>`;
+}
+const resHTML = v => num(v, v === 6 || v === 9);
+
+function cardEl(kind, html, badge, group){
+  const d = document.createElement('div');
+  d.className = 'card ' + kind + (group ? ' g-' + group : '');
+  // pas de pastille à l'écran : elle donnerait un indice (on trierait par table au lieu de calculer)
+  d.innerHTML = `<div class="face"><span class="val">${html}</span></div>`;
+  return d;
+}
+// La plus grande taille de carte qui fait tout tenir dans la zone
+function fit(el, n, maxCw = 220, gap = 10){
+  if (!n) { el.style.gridTemplateColumns = '1fr'; return; }
+  const W = el.clientWidth, H = el.clientHeight;
+  let best = 0, bc = 1;
+  for (let c = 1; c <= n; c++) {
+    const r = Math.ceil(n / c);
+    const cw = Math.min((W - gap * (c - 1)) / c, ((H - gap * (r - 1)) / r) * 1.5);
+    if (cw > best) { best = cw; bc = c; }
+  }
+  best = Math.max(46, Math.min(maxCw, Math.floor(best)));
+  el.style.setProperty('--cw', best + 'px');
+  el.style.gridTemplateColumns = `repeat(${bc}, ${best}px)`;
+}
+let toastT;
+function toast(msg, cls = ''){
+  const t = $('#toast'); t.textContent = msg; t.className = 'on ' + cls;
+  clearTimeout(toastT); toastT = setTimeout(() => t.className = '', 1400);
+}
+function show(id){ document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id)); }
+function modal(html){ $('#mbox').innerHTML = html; $('#modal').classList.add('on'); }
+function closeModal(){ $('#modal').classList.remove('on'); }
+
+/* ================== NUMÉRATION : REPRÉSENTATIONS ==================
+   Chaque carte montre le nombre sous une forme tirée parmi celles cochées pour son côté (plateau / mains). */
+const REPS = {
+  dessin:  {label:'🧱 Dessin',            short:'dessin'},
+  nombre:  {label:'34 Nombre',            short:'nombre'},
+  lettres: {label:'trente-quatre En lettres', short:'lettres'},
+  decomp:  {label:'30 + 4 Décomposition', short:'décomposition'},
+  unites:  {label:'3 d 4 u Unités',       short:'unités'}
+};
+const FORMS = {
+  classique: {label:'Classiques (3 d 4 u, 30 + 4)'},
+  desordre:  {label:'Dans le désordre (4 u 3 d, 4 + 30)'},
+  echange:   {label:'Avec échange (2 d 14 u, 20 + 14)'}
+};
+// Principe en jeu, pour le bilan d'erreurs
+const PRINC = {position:'position des chiffres', echange:'échange 10 u = 1 d', lecture:'lecture / comptage'};
+const isNumDeck = id => id.startsWith('n');
+const numMode = () => cfg.domain === 'num';
+const activeDecks = () => cfg.decks.filter(id => isNumDeck(id) === numMode());
+const usesDrawing = () => numMode() && (cfg.repB.includes('dessin') || cfg.repH.includes('dessin'));
+const chronoAllowed = () => !usesDrawing();
+// Texte de carte : taille adaptée ; les longues additions et les longs mots passent sur deux lignes
+function ntSpan(t){
+  let lines = [t];
+  const terms = t.split(' + ');
+  if (terms.length >= 4) { const m = Math.ceil(terms.length / 2); lines = [terms.slice(0, m).join(' + ') + ' +', terms.slice(m).join(' + ')]; }
+  else if (terms.length === 1 && t.length > 12 && /[- ]/.test(t)) {
+    // couper un nombre en lettres au tiret (ou à l'espace) le plus proche du milieu
+    let best = -1; for (let i = 0; i < t.length; i++) if ((t[i] === '-' || t[i] === ' ') && (best < 0 || Math.abs(i - t.length / 2) < Math.abs(best - t.length / 2))) best = i;
+    lines = [t.slice(0, best + (t[best] === '-' ? 1 : 0)), t.slice(best + 1)];
+  }
+  const L = Math.max(...lines.map(l => l.length));
+  let k = Math.min(.3, 1.55 / L); if (lines.length > 1) k = Math.min(k, .17);
+  return `<span class="nt" style="font-size:calc(var(--cw) * ${k.toFixed(3)});white-space:nowrap">${lines.join('<br>')}</span>`;
+}
+// Nombres en lettres (orthographe traditionnelle : vingt et un, soixante-dix, quatre-vingts)
+const U_FR = ['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+const T_FR = {2:'vingt', 3:'trente', 4:'quarante', 5:'cinquante', 6:'soixante'};
+function enLettres(n){
+  if (n < 20) return U_FR[n];
+  const t = Math.floor(n / 10), u = n % 10;
+  if (t < 7) return u === 0 ? T_FR[t] : u === 1 ? `${T_FR[t]} et un` : `${T_FR[t]}-${U_FR[u]}`;
+  if (t === 7) return u === 1 ? 'soixante et onze' : `soixante-${U_FR[10 + u]}`;
+  if (t === 8) return u === 0 ? 'quatre-vingts' : `quatre-vingt-${U_FR[u]}`;
+  return `quatre-vingt-${U_FR[10 + u]}`;
+}
+// Toutes les formes d'un nombre, avec leur principe et les pièges qui visent l'erreur typique
+//   tag : classique / desordre / echange ; traps : [{v, p}] (p = principe visé)
+function numForms(n, type){
+  const t = Math.floor(n / 10), u = n % 10, f = [];
+  const inv = u ? u * 10 + t : -1;
+  const add = (txt, tag, traps = []) => f.push({txt, tag, traps});
+  if (type === 'unites') {
+    add(u ? `${t} d ${u} u` : `${t} d`, 'classique');
+    if (u) add(`${u} u ${t} d`, 'desordre', [{v: inv, p: 'position'}]);
+    add(`${n} u`, 'echange');
+    for (let k = 1; k < t; k++) {
+      const D = t - k, U = u + 10 * k;
+      add(`${D} d ${U} u`, 'echange', [{v: D * 10 + U % 10, p: 'echange'}, {v: D + U, p: 'echange'}]);   // 2 d 14 u → 24 ou 16
+    }
+  } else {   // décomposition
+    const split = () => { const a = 1 + Math.floor(Math.random() * (t - 1)); return [a * 10, (t - a) * 10]; };
+    if (t <= 5) {
+      if (u) add(`${t * 10} + ${u}`, 'classique');
+      if (t > 1) add([...Array(t).fill(10), ...(u ? [u] : [])].join(' + '), 'classique');
+      if (u) {
+        add(`${u} + ${t * 10}`, 'desordre', [{v: inv, p: 'position'}]);
+        const ins = Array(t).fill(10); ins.splice(Math.floor(Math.random() * t), 0, u);
+        add(ins.join(' + '), 'desordre', [{v: inv, p: 'position'}]);
+      }
+    } else {
+      const [a, b] = split();
+      add(u ? `${t * 10} + ${u}` : `${a} + ${b}`, 'classique');
+      if (u) add(`${a} + ${b} + ${u}`, 'classique');
+      if (u) { add(`${u} + ${t * 10}`, 'desordre', [{v: inv, p: 'position'}]); add(`${u} + ${a} + ${b}`, 'desordre', [{v: inv, p: 'position'}]); }
+    }
+    for (let k = 1; k < Math.min(t, 3); k++) {
+      const D = (t - k) * 10, U = u + 10 * k;
+      if (u) add(`${D} + ${U}`, 'echange', [{v: D + U % 10, p: 'echange'}]);    // 20 + 14 → 24 (sans unités, 20 + 10 n'est pas un échange)
+    }
+    if (!f.length) add(String(n), 'classique');
+  }
+  return f;
+}
+function numFace(n, type){
+  if (type === 'dessin')  return {type, html: numSVG(n), txt: drawTxt(n), tag:'classique', traps:[]};
+  if (type === 'nombre')  return {type, html: ntSpan(String(n)), txt: String(n), tag:'classique', traps:[]};
+  if (type === 'lettres') { const t = enLettres(n); return {type, html: ntSpan(t), txt: t, tag:'classique', traps:[]}; }
+  const all = numForms(n, type), ok = all.filter(x => cfg.forms.includes(x.tag));
+  const c = pick(ok.length ? ok : all.filter(x => x.tag === 'classique').length ? all.filter(x => x.tag === 'classique') : all);
+  return {type, html: ntSpan(c.txt), txt: c.txt, tag: c.tag, traps: c.traps};
+}
+const sideB = () => cfg.repB.length ? cfg.repB : ['dessin'];
+const sideH = () => cfg.repH.length ? cfg.repH : ['nombre'];
+// Habille les cartes : plateau d'abord, puis les mains (jamais la même forme que leur carte du plateau)
+function dressNum(ops, results){
+  if (!numMode()) return;
+  const B = sideB(), H = sideH(), byVal = new Map();
+  results.forEach(r => { if (!r.face) r.face = numFace(r.val, pick(B)); byVal.set(r.val, r.face.type); });
+  ops.forEach(o => { if (o.face) return; const avoid = byVal.get(o.a), ch = H.filter(t => t !== avoid); o.face = numFace(o.a, pick(ch.length ? ch : H)); });
+}
+// Principe en jeu dans une association (pour le bilan)
+function pairPrinc(op, rs){
+  const tags = [op.face && op.face.tag, rs.face && rs.face.tag];
+  if (tags.includes('echange')) return 'echange';
+  if (tags.includes('desordre')) return 'position';
+  return 'lecture';
+}
+function errPrinc(op, rs){
+  // le piège visait-il l'erreur typique de CETTE carte ?
+  const t = (op.face && op.face.traps || []).find(x => x.v === rs.val);
+  if (t) return t.p;
+  const inv = op.a % 10 ? (op.a % 10) * 10 + Math.floor(op.a / 10) : -1;
+  if (rs.val === inv) return 'position';
+  return pairPrinc(op, rs);
+}
+const opFace = o => o.sym === 'num' ? o.face.html : opHTML(o);
+const resFace = r => numMode() ? r.face.html : resHTML(r.val);
+const drawTxt = v => `${plural(Math.floor(v / 10), 'barre')} et ${plural(v % 10, 'cube')}`;
+const errText = (op, rs) => op.sym === 'num' ? `${op.face.txt} posé sur ${rs.face.txt} (${PRINC[errPrinc(op, rs)]})` : `${opText(op)} → ${rs.val}`;
+function setLabels(){
+  const n = numMode();
+  $('#vLabRes').textContent = n ? 'Le plateau' : 'Les résultats';
+  $('#vLabOps').textContent = n ? 'Tes cartes' : 'Les calculs';
+  $('#dLab').textContent = n ? 'Le plateau' : 'Le plateau : les résultats';
+}
+
+/* ================== SONS, BRAVOS, CONFETTIS ================== */
+let sound = store.get('pairfait-son', true), actx = null;
+function tone(freqs, dur = .12, type = 'triangle'){
+  if (!sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    freqs.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * dur;
+      o.type = type; o.frequency.value = f; g.gain.setValueAtTime(.18, t); g.gain.exponentialRampToValueAtTime(.001, t + dur * 1.6);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur * 1.7);
+    });
+  } catch(e){}
+}
+const sOk = () => tone([660, 880]), sKo = () => tone([300, 220], .16, 'sine'),
+      sTap = () => tone([520], .05, 'sine'), sWin = () => tone([523, 659, 784, 1046], .14);
+function refreshMute(){ document.querySelectorAll('.mute').forEach(b => b.textContent = sound ? '🔊' : '🔇'); }
+document.querySelectorAll('.mute').forEach(b => b.onclick = () => { sound = !sound; store.set('pairfait-son', sound); refreshMute(); });
+const PRAISE = ['Bravo !', 'Super !', 'Génial !', 'Trop fort !', 'Excellent !', 'Waouh !', 'Bien joué !', 'Champion !'];
+const OOPS = ['Presque ! Essaie encore.', 'Oups ! Réessaie.', 'Pas tout à fait…', 'Courage, tu vas trouver !'];
+function confetti(n = 90){
+  const cols = ['#ff9f1c','#2ec4b6','#9b5de5','#ff5d8f','#3a86ff','#ffd166'];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div'); c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw'; c.style.background = pick(cols);
+    c.style.animationDuration = 2 + Math.random() * 2 + 's'; c.style.animationDelay = Math.random() * .8 + 's';
+    c.style.borderRadius = Math.random() < .5 ? '50%' : '3px';
+    document.body.appendChild(c); setTimeout(() => c.remove(), 5000);
+  }
+}
+const starsHTML = n => `<div class="stars">${[0,1,2].map(i => `<span style="animation-delay:${.2 + i * .25}s">${i < n ? '⭐' : '☆'}</span>`).join('')}</div>`;
+
+/* ================== MENU ================== */
+const cfg = Object.assign({domain:'tables', repB:['dessin'], repH:['nombre'], forms:['classique','desordre','echange'], mode:'visible', decks:['a2', 'n10'], who:'', dur:'libre', n0:'Joueur 1', n1:'Joueur 2', win:'first', err:'keep', traps:true},
+                          store.get('pairfait-cfg2', {}));
+cfg.decks = cfg.decks.filter(id => DECKS.some(d => d.id === id));
+if (!cfg.decks.some(isNumDeck)) cfg.decks.push('n10');
+if (!cfg.decks.some(id => !isNumDeck(id))) cfg.decks.push('a2');
+const saveCfg = () => store.set('pairfait-cfg2', cfg);
+const deckKey = () => [...activeDecks()].sort().join('-') + (numMode() ? `|${[...cfg.repB].sort().join('+')}>${[...cfg.repH].sort().join('+')}#${[...cfg.forms].sort().join('+')}` : '');
+const deckLabel = key => {
+  const [ids, rp] = key.split('|');
+  const lbl = ids.split('-').map(id => { const d = DECKS.find(x => x.id === id); return d ? (d.group === 'num' ? d.label : d.label) : id; }).join(', ');
+  if (!rp) return lbl;
+  const [sides, fm] = rp.split('#'), [b, hd] = sides.split('>'), nm = s => s.split('+').map(t => (REPS[t] || {short:t}).short).join('/');
+  const fl = fm ? ' · ' + fm.split('+').map(x => ({classique:'classiques', desordre:'désordre', echange:'échange'}[x] || x)).join('/') : '';
+  return `${lbl} (${nm(b)} ↔ ${nm(hd)}${fl})`;
+};
+
+function renderSetup(){
+  ['add','mix','mul','num'].forEach(g => {
+    const box = $('#g-' + g); box.innerHTML = '';
+    DECKS.filter(d => d.group === g).forEach(d => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (cfg.decks.includes(d.id) ? ' on' : '');
+      b.innerHTML = d.label + (d.sub ? ` <span class="sub">(${d.sub})</span>` : '');
+      b.onclick = () => { cfg.decks = cfg.decks.includes(d.id) ? cfg.decks.filter(x => x !== d.id) : [...cfg.decks, d.id]; renderSetup(); };
+      box.appendChild(b);
+    });
+  });
+  document.querySelectorAll('.domain').forEach(b => b.classList.toggle('on', b.dataset.domain === cfg.domain));
+  document.querySelectorAll('[data-dom]').forEach(pn => pn.style.display = pn.dataset.dom === cfg.domain ? '' : 'none');
+  ['repB', 'repH'].forEach(side => {
+    const box = $('#' + side); box.innerHTML = '';
+    Object.entries(REPS).forEach(([k, r]) => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (cfg[side].includes(k) ? ' on' : ''); b.textContent = r.label;
+      b.onclick = () => {
+        const cur = cfg[side];
+        if (cur.includes(k)) { if (cur.length > 1) cfg[side] = cur.filter(x => x !== k); else toast('Garde au moins une représentation'); }
+        else cfg[side] = [...cur, k];
+        renderSetup();
+      };
+      box.appendChild(b);
+    });
+  });
+  { const box = $('#forms'); box.innerHTML = '';
+    Object.entries(FORMS).forEach(([k, f]) => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (cfg.forms.includes(k) ? ' on' : ''); b.textContent = f.label;
+      b.onclick = () => {
+        if (cfg.forms.includes(k)) { if (cfg.forms.length > 1) cfg.forms = cfg.forms.filter(x => x !== k); else toast('Garde au moins une forme'); }
+        else cfg.forms = [...cfg.forms, k];
+        renderSetup();
+      };
+      box.appendChild(b);
+    });
+  }
+  document.querySelectorAll('.mode').forEach(m => m.classList.toggle('on', m.dataset.mode === cfg.mode));
+  $('#optVis').classList.toggle('on', cfg.mode === 'visible');
+  $('#optDuo').classList.toggle('on', cfg.mode === 'duo');
+  $('#errLab').style.display = cfg.win === 'first' ? 'none' : '';
+  $('#who').value = cfg.who; $('#dur').value = cfg.dur; $('#n0').value = cfg.n0; $('#n1').value = cfg.n1;
+  $('#winRule').value = cfg.win; $('#errRule').value = cfg.err; $('#traps').checked = cfg.traps;
+  const {ops, results} = buildSet();
+  const same = numMode() && cfg.repB.length === 1 && cfg.repH.length === 1 && cfg.repB[0] === cfg.repH[0];
+  $('#summary').textContent = !ops.length ? (numMode() ? 'Choisis au moins une dizaine.' : 'Choisis au moins un jeu de cartes.')
+    : same ? '⚠️ Choisis deux représentations différentes pour le plateau et les mains.'
+    : (numMode() ? `${ops.length} nombres` : `${ops.length} calculs et ${results.length} résultats`)
+      + (cfg.mode === 'duo'
+          ? (ops.length > LIM.duo.hand || results.length > LIM.duo.res ? ` · ${takeFrom(ops, LIM.duo).taken.length} cartes tirées au hasard par partie` : '')
+          : (nbDonnes(ops, LIM.vis) > 1 ? ` · en ${nbDonnes(ops, LIM.vis)} donnes` : ''));
+  const sb = $('#setBest'), who = cfg.who.trim();
+  const locked = cfg.mode === 'visible' && cfg.dur === 'chrono' && !chronoUnlocked(who);
+  $('#dur').options[1].disabled = !chronoAllowed();
+  $('#dur').options[1].textContent = !chronoAllowed() ? 'Top chrono : pas avec les dessins (on prend le temps de compter)'
+                                   : 'Top chrono : 1 minute' + (chronoUnlocked(who) ? '' : ' 🔒');
+  if (!chronoAllowed() && cfg.dur === 'chrono') { cfg.dur = 'libre'; $('#dur').value = 'libre'; }
+  if (cfg.mode === 'visible' && ops.length) {
+    sb.style.display = '';
+    sb.innerHTML = !who ? '✏️ Écris ton prénom pour garder ton record'
+      : locked ? `<span class="lockNote">🔒 ${LOCK_MSG}</span>` : esc(bestText(who, cfg.dur));
+  } else sb.style.display = 'none';
+  saveCfg();
+}
+document.querySelectorAll('.mode').forEach(m => m.onclick = () => { cfg.mode = m.dataset.mode; renderSetup(); });
+document.querySelectorAll('.domain').forEach(b => b.onclick = () => { cfg.domain = b.dataset.domain; renderSetup(); });
+document.querySelectorAll('[data-all]').forEach(b => b.onclick = () => {
+  cfg.decks = [...new Set([...cfg.decks, ...DECKS.filter(d => d.group === b.dataset.all).map(d => d.id)])]; renderSetup();
+});
+document.querySelectorAll('[data-none]').forEach(b => b.onclick = () => {
+  const ids = DECKS.filter(d => d.group === b.dataset.none).map(d => d.id); cfg.decks = cfg.decks.filter(x => !ids.includes(x)); renderSetup();
+});
+$('#who').onchange = e => { cfg.who = e.target.value.trim(); renderSetup(); };
+$('#dur').onchange = e => { cfg.dur = e.target.value; renderSetup(); };
+$('#n0').oninput = e => { cfg.n0 = e.target.value; saveCfg(); };
+$('#n1').oninput = e => { cfg.n1 = e.target.value; saveCfg(); };
+$('#winRule').onchange = e => { cfg.win = e.target.value; renderSetup(); };
+$('#errRule').onchange = e => { cfg.err = e.target.value; saveCfg(); };
+$('#traps').onchange = e => { cfg.traps = e.target.checked; saveCfg(); };
+$('#recBtn').onclick = () => showRecords();
+
+// Pastille : celle du jeu, ou les deux pastilles quand le résultat appartient à plusieurs jeux
+const BADGE_ORDER = DECKS.map(d => d.badge);
+const badgeOf = set => [...set].sort((a, b) => BADGE_ORDER.indexOf(a) - BADGE_ORDER.indexOf(b)).join(' ');
+// Construit les cartes ; les résultats identiques sont regroupés en une seule carte
+function buildSet(extra = []){
+  const ops = [];
+  const seen = new Set();   // un même calcul n'apparaît qu'une fois (ex. 4 + 4 dans « 6 à 10 » et dans « doubles »)
+  DECKS.filter(d => activeDecks().includes(d.id)).forEach(d =>
+    d.ops.forEach(o => { const k = opText(o); if (seen.has(k)) return; seen.add(k);
+      ops.push({...o, val: calc(o), badge: d.badge, group: d.group}); }));
+  extra.forEach(o => { const k = opText(o); if (seen.has(k)) return; seen.add(k);
+    const d = DECKS.find(x => x.ops.some(y => opText(y) === k)) || {badge:'', group:''};
+    ops.push({...o, val: calc(o), badge: d.badge, group: d.group, review: true}); });
+  return groupResults(ops);
+}
+function groupResults(ops){
+  const map = new Map();
+  ops.forEach(o => {
+    if (!map.has(o.val)) map.set(o.val, {val:o.val, total:0, badges:new Set(), groups:new Set()});
+    const r = map.get(o.val); r.total++; r.badges.add(o.badge); r.groups.add(o.group);
+  });
+  const results = [...map.values()].map(r => ({val:r.val, total:r.total, left:r.total,
+    badge: badgeOf(r.badges), group: r.groups.size === 1 ? [...r.groups][0] : ''}));
+  return {ops, results};
+}
+// Résultats pièges : des erreurs plausibles (voisin ±1, ±2, table voisine), avec la même pastille
+function makeTraps(ops, results){
+  if (!cfg.traps) return [];
+  const have = new Set(results.map(r => r.val)), cand = new Map();   // valeur → pastilles des calculs qui l'ont produite
+  ops.forEach(o => {
+    const inv = o.val >= 10 && o.val % 10 ? (o.val % 10) * 10 + Math.floor(o.val / 10) : -1;   // 34 ↔ 43
+    const near = o.sym === '×' ? [o.val - 1, o.val + 1, o.val - o.b, o.val + o.b]
+               : o.sym === 'num' ? [o.val - 1, o.val + 1, o.val - 10, o.val + 10, inv]
+               : [o.val - 1, o.val + 1, o.val - 2, o.val + 2];
+    near.forEach(v => {
+      if (v < 0 || have.has(v) || (o.sym === 'num' && v > 99)) return;
+      if (!cand.has(v)) cand.set(v, {badges:new Set(), groups:new Set()});
+      cand.get(v).badges.add(o.badge); cand.get(v).groups.add(o.group);
+    });
+  });
+  const n = Math.min(cand.size, Math.max(2, Math.round(results.length / 3)));
+  // numération : en priorité les pièges qui visent l'erreur typique de la forme de chaque carte (43 pour 4 u 3 d, 24 et 16 pour 2 d 14 u)
+  const targeted = new Map();
+  ops.forEach(o => (o.face && o.face.traps || []).forEach(t => { if (t.v >= 0 && t.v <= 99 && !have.has(t.v)) targeted.set(t.v, t.p); }));
+  const chosen = [...shuffle([...targeted.keys()]).slice(0, n)];
+  shuffle([...cand.keys()]).forEach(v => { if (chosen.length < n && !chosen.includes(v)) chosen.push(v); });
+  // chaque piège porte la pastille du calcul dont il est l'erreur probable
+  return chosen.map(v => {
+    const c = cand.get(v) || {badges:new Set(['N']), groups:new Set(['num'])}, b = pick([...c.badges]);
+    const g = (DECKS.find(d => d.badge === b) || {}).group || '';
+    const inv = ops.some(o => o.sym === 'num' && o.a % 10 && (o.a % 10) * 10 + Math.floor(o.a / 10) === v);
+    return {val:v, total:0, left:0, trap:true, badge:b, group:g, trapP: targeted.get(v) || (inv ? 'position' : null)};
+  });
+}
+
+$('#go').onclick = () => {
+  if (!buildSet().ops.length) { toast(numMode() ? 'Choisis au moins une dizaine' : 'Choisis au moins un jeu de cartes', 'ko'); return; }
+  if (numMode() && cfg.repB.length === 1 && cfg.repH.length === 1 && cfg.repB[0] === cfg.repH[0]) { toast('Choisis deux représentations différentes', 'ko'); return; }
+  cfg.who = $('#who').value.trim(); cfg.n0 = $('#n0').value.trim() || 'Joueur 1'; cfg.n1 = $('#n1').value.trim() || 'Joueur 2';
+  saveCfg();
+  if (cfg.mode === 'visible' && cfg.dur === 'chrono' && !chronoUnlocked(cfg.who)) { toast('🔒 Top chrono pas encore débloqué', 'ko'); renderSetup(); return; }
+  startMode();
+};
+function startMode(){ closeModal(); if (cfg.mode === 'visible' && cfg.dur === 'chrono' && !chronoUnlocked(cfg.who)) { goMenu(); return; } cfg.mode === 'duo' ? startDuo() : startVis(); }
+function goMenu(){ stopVis(); closeModal(); show('setup'); renderSetup(); }
+document.querySelectorAll('[data-act="menu"]').forEach(b => b.onclick = goMenu);
+document.querySelectorAll('[data-act="replay"]').forEach(b => b.onclick = startMode);
+
+/* ================== AIDE ================== */
+const HELP = {
+  eleve: `
+    <h3>🎯 Le but</h3>
+    <p>Trouver les cartes qui vont ensemble : un calcul et son résultat, ou deux écritures du même nombre.</p>
+    <h3>👀 Seul</h3>
+    <ul><li>Touche une de <b>tes cartes</b> (en bas), puis la carte du <b>plateau</b> qui va avec (en haut). Tu peux aussi commencer par le plateau.</li>
+    <li>Si c'est juste, les deux cartes s'en vont. Si c'est faux, elles tremblent : réessaie !</li>
+    <li>⚠️ Attention aux <b>pièges</b> : certaines cartes du plateau ne vont avec aucune de tes cartes.</li>
+    <li>Quand toutes les cartes sont trouvées, une <b>nouvelle donne</b> peut arriver.</li></ul>
+    <h3>⏱ Top chrono</h3>
+    <ul><li>Une minute pour faire le plus d'associations justes. Le chrono démarre quand tu touches la première carte.</li>
+    <li>🔒 Il s'ouvre quand tu as réussi une partie « sans limite » avec 2 erreurs au plus sur les mêmes cartes.</li></ul>
+    <h3>👫 Le duel</h3>
+    <ul><li>Chacun son tour : choisis une carte dans <b>ta main</b>, puis la carte du plateau qui va avec.</li>
+    <li>Juste : tu gagnes les cartes dans ton <b>pli</b>. Faux : c'est au tour de l'autre joueur.</li>
+    <li>Le gagnant est le premier qui n'a plus de cartes (l'autre joue alors un <b>dernier tour</b>), ou celui qui a le plus de cartes dans son pli.</li></ul>
+    <h3>🔁 Les cartes à revoir</h3>
+    <p>Une carte ratée revient dans tes prochaines parties, avec le signe 🔁, jusqu'à ce que tu la réussisses 2 fois.</p>
+    <h3>⭐ Les records</h3>
+    <p>Écris ton prénom dans le menu : ton record et tes dernières parties sont gardés. Le but est de battre <b>ton</b> record !</p>`,
+  prof: `
+    <div class="teacher">
+    <h3>🔢 Les tables</h3>
+    <ul><li>Additions +2 à +9, répertoire additif regroupé par compétence (sommes ≤ 5, 6 à 10, passage de la dizaine, doubles, presque doubles, moitiés), multiplications ×2 à ×10.</li>
+    <li>Pièges : voisins à ±1 ou ±2, produit de la table voisine.</li></ul>
+    <h3>🧱 La numération (10 à 99)</h3>
+    <ul><li>Choisis la représentation du plateau et celle des mains : dessin, nombre, en lettres, décomposition, unités de numération. Plusieurs cases cochées = une forme au hasard par carte, jamais la même que sa carte partenaire.</li>
+    <li><b>Formes</b> : « dans le désordre » (4 u 3 d, 4 + 30) teste le principe de <b>position</b> ; « avec échange » (2 d 14 u, 20 + 14) teste le principe d'<b>échange</b>. Le bilan et le tableau des records séparent les deux.</li>
+    <li>Pièges ciblés selon la forme : 43 pour 4 u 3 d ; 24 et 16 pour 2 d 14 u ; puis voisins et dizaine voisine.</li>
+    <li>Pas de Top chrono avec les dessins : compter est la procédure attendue.</li></ul>
+    <h3>📏 Nombre de cartes à l'écran</h3>
+    <ul><li>Seul : au plus 12 cartes sur le plateau (9 résultats + 3 pièges) et 12 cartes en bas. Si tu choisis beaucoup de tables, la partie se joue en plusieurs donnes et le compteur indique « donne 2 / 5 ».</li>
+    <li>Duel : au plus 16 cartes en main (8 par joueur) et 13 sur le plateau, tirées au hasard dans les cartes choisies.</li></ul>
+    <h3>📊 Données</h3>
+    <ul><li>Records, cartes à revoir et bilan par principe sont enregistrés par prénom <b>sur cet appareil</b> (pas d'envoi, pas de compte). Le bouton 🏆 les montre ; « effacer » les supprime.</li>
+    <li>Records et déblocage du Top chrono dépendent des cartes choisies (et, en numération, des représentations et des formes).</li></ul>
+    </div>`
+};
+function showHelp(tab = 'eleve'){
+  modal(`<h2>❓ Aide</h2>
+    <div class="helpTabs"><button class="btn ${tab === 'eleve' ? 'primary' : ''}" onclick="showHelp('eleve')">🧒 Pour jouer</button>
+      <button class="btn ${tab === 'prof' ? 'primary' : ''}" onclick="showHelp('prof')">🍎 Pour l'enseignant</button></div>
+    <div class="helpBox">${HELP[tab]}</div>
+    <div class="row"><button class="btn primary" onclick="closeModal()">J'ai compris !</button></div>`);
+}
+$('#helpBtn').onclick = () => showHelp();
+document.querySelectorAll('.help').forEach(b => b.onclick = () => showHelp());
+
+/* ================== RECORDS PAR ÉLÈVE ==================
+   pairfait-rec = { prénom: { libre|chrono: { jeu de cartes: {best, hist:[...]} } } }
+   libre  : le moins d'erreurs, puis le temps le plus court
+   chrono : le plus d'associations justes en 1 minute, puis le moins d'erreurs */
+const REC_KEY = 'pairfait-rec';
+const getRec = () => store.get(REC_KEY, {});
+const better = (type, a, b) => !b || (type === 'libre'
+  ? (a.err < b.err || (a.err === b.err && a.secs < b.secs))
+  : (a.ok > b.ok || (a.ok === b.ok && a.err < b.err)));
+const scoreTxt = (type, s) => type === 'libre' ? `${plural(s.err, 'erreur')} en ${fmt(s.secs)}` : `${plural(s.ok, 'réussite')}, ${plural(s.err, 'erreur')}`;
+function recEntry(name, type, key){ const r = getRec(); return ((r[name] || {})[type] || {})[key] || null; }
+function bestText(name, type){
+  const e = recEntry(name, type, deckKey());
+  const lbl = type === 'libre' ? 'Record' : 'Record Top chrono';
+  return e ? `⭐ ${lbl} de ${name} : ${scoreTxt(type, e.best)}` : `⭐ ${name} n'a pas encore de record ici`;
+}
+function saveScore(name, type, key, s){
+  const r = getRec(); r[name] = r[name] || {}; r[name][type] = r[name][type] || {};
+  const e = r[name][type][key] || {best:null, hist:[]};
+  const prev = e.best, isRec = better(type, s, prev);
+  if (isRec) e.best = s;
+  e.hist = [...e.hist, s].slice(-10);
+  r[name][type][key] = e; store.set(REC_KEY, r);
+  return {isRec, prev, hist:e.hist};
+}
+function showRecords(){
+  const r = getRec(), names = Object.keys(r).sort((a, b) => a.localeCompare(b, 'fr'));
+  let html = '<h2>🏆 Les records</h2>';
+  if (!names.length) html += '<p class="recEmpty">Pas encore de record. Écris ton prénom dans le menu et joue en mode « cartes visibles ».</p>';
+  names.forEach(n => {
+    const rows = [];
+    ['libre', 'chrono'].forEach(type => Object.entries(r[n][type] || {}).forEach(([key, e]) => rows.push({key, type, e})));
+    rows.sort((a, b) => deckLabel(a.key).localeCompare(deckLabel(b.key), 'fr', {numeric:true}) || a.type.localeCompare(b.type));
+    const rv = Object.keys(r[n]._errs || {});
+    html += `<div class="recWho">🧒 ${esc(n)} <button class="btn small" data-del="${esc(n)}">effacer</button></div>
+      ${rv.length ? `<p style="text-align:left;margin:0 0 4px">🔁 À revoir : ${rv.join(' · ')}</p>` : ''}
+      ${r[n]._princ ? `<p style="text-align:left;margin:0 0 4px">🧱 Numération : ${Object.entries(r[n]._princ).map(([k, x]) => `${PRINC[k]} ${x.err} erreur${x.err > 1 ? 's' : ''} / ${x.n} (${Math.round(100 * (x.n - x.err) / x.n)} % réussi)`).join(' · ')}</p>` : ''}
+      <table class="recTable"><tr><th>Cartes</th><th>Partie</th><th>Record</th><th>Dernières parties</th></tr>
+      ${rows.map(({key, type, e}) => `<tr><td>${deckLabel(key)}</td><td>${type === 'libre' ? 'sans limite' : 'Top chrono'}</td>
+        <td>${scoreTxt(type, e.best)}</td>
+        <td>${e.hist.map(s => type === 'libre' ? `${s.err}✗ ${fmt(s.secs)}` : `${s.ok}`).join(' · ')}</td></tr>`).join('')}</table>`;
+  });
+  html += `<div class="row"><button class="btn primary" onclick="closeModal()">Fermer</button>
+    ${names.length ? `<button class="btn" id="delAll">🗑 Tout effacer</button>` : ''}</div>`;
+  modal(html);
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    if (!confirm(`Effacer les records de ${b.dataset.del} ?`)) return;
+    const r = getRec(); delete r[b.dataset.del]; store.set(REC_KEY, r); showRecords(); renderSetup();
+  });
+  const da = $('#delAll'); if (da) da.onclick = () => { if (confirm('Effacer les records de tous les élèves ?')) { store.set(REC_KEY, {}); showRecords(); renderSetup(); } };
+}
+
+/* ================== RÉVISION DES ERREURS ==================
+   Pour chaque élève : les calculs ratés reviennent dans ses parties suivantes
+   jusqu'à être réussis 2 fois sans erreur. */
+const REVIEW_MAX = 3;   // calculs « à revoir » ajoutés à chaque partie
+function getReview(name){ return ((getRec()[name] || {})._errs) || {}; }
+function pickReview(name){
+  const errs = getReview(name), inSet = new Set(buildSet().ops.map(opText)), n = numMode();
+  return shuffle(Object.values(errs).filter(e => !inSet.has(opText(e)) && (e.sym === 'num') === n)).slice(0, REVIEW_MAX).map(e => ({a:e.a, b:e.b, sym:e.sym}));
+}
+function saveReview(name, track){
+  const r = getRec(); r[name] = r[name] || {}; const errs = r[name]._errs || {};
+  track.forEach(({op, missed}, k) => {
+    if (missed) errs[k] = {a:op.a, b:op.b, sym:op.sym, need:2};
+    else if (errs[k]) { errs[k].need--; if (errs[k].need <= 0) delete errs[k]; }
+  });
+  r[name]._errs = errs; store.set(REC_KEY, r);
+}
+// Top chrono : seulement après une partie « sans limite » réussie (2 erreurs au plus) sur ces cartes
+function chronoUnlocked(name){
+  if (!name) return false;
+  const e = recEntry(name, 'libre', deckKey());
+  return !!e && e.hist.some(s => s.err <= 2);
+}
+const LOCK_MSG = 'Top chrono : réussis d\u2019abord une partie « sans limite » avec 2 erreurs au plus sur ces cartes.';
+
+// Cumul par élève des essais et erreurs, par principe (numération)
+function savePrinc(name, princ){
+  if (!Object.keys(princ).length) return;
+  const r = getRec(); r[name] = r[name] || {}; const P = r[name]._princ || {};
+  Object.entries(princ).forEach(([k, x]) => { P[k] = P[k] || {n:0, err:0}; P[k].n += x.n; P[k].err += x.err; });
+  r[name]._princ = P; store.set(REC_KEY, r);
+}
+
+/* ================== SEUL : CARTES VISIBLES ================== */
+let V = null;
+function stopVis(){ if (V && V.timer) { clearInterval(V.timer); V.timer = null; } }
+function startVis(){
+  stopVis();
+  V = {type:cfg.dur, name:cfg.who.trim(), key:deckKey(), ok:0, errors:[], t0:0, timer:null, lock:false, over:false, round:0,
+       track:new Map(), princ:{}};
+  if (!chronoAllowed()) V.type = 'libre';
+  V.review = V.name ? pickReview(V.name) : [];
+  // la pioche : calculs à revoir en premier (ils sont dans la première donne), puis le reste mélangé
+  const all = buildSet(V.review).ops;
+  V.pool = [...all.filter(o => o.review), ...shuffle(all.filter(o => !o.review))];
+  V.total = all.length; V.nDonnes = nbDonnes(V.pool, LIM.vis);
+  dealVis();
+  if (V.review.length) setTimeout(() => toast(`🔁 ${plural(V.review.length, 'calcul')} à revoir`, 'ok'), 300);
+  $('#vWho').textContent = V.name ? '🧒 ' + V.name : '🧒 sans prénom';
+  $('#vBest').style.display = V.name ? '' : 'none';
+  if (V.name) $('#vBest').textContent = bestText(V.name, V.type);
+  setLabels(); show('vis'); visRender();
+  requestAnimationFrame(visFit);
+}
+/* Limite visuelle : au-delà, un élève de CE1 passe plus de temps à chercher qu'à calculer.
+   Les cartes arrivent donc par donnes successives. */
+const LIM = {vis: {res: 9, traps: 3, hand: 12}, duo: {res: 10, traps: 3, hand: 16}};
+// Tire dans la pioche au plus « hand » cartes dont les résultats ne dépassent pas « res » valeurs différentes
+function takeFrom(pool, lim){
+  const taken = [], vals = new Set(), rest = [];
+  pool.forEach(o => {
+    if (taken.length < lim.hand && (vals.has(o.val) || vals.size < lim.res)) { taken.push(o); vals.add(o.val); }
+    else rest.push(o);
+  });
+  return {taken, rest};
+}
+function nbDonnes(ops, lim){ let pool = [...ops], n = 0; while (pool.length) { pool = takeFrom(pool, lim).rest; n++; } return n; }
+// Distribue une donne (sans limite : jusqu'à épuisement de la pioche ; Top chrono : la pioche se reconstitue)
+function dealVis(){
+  if (!V.pool.length) V.pool = shuffle(buildSet().ops);
+  const t = takeFrom(V.pool, LIM.vis); V.pool = t.rest;
+  let {ops, results} = groupResults(t.taken);
+  V.ops = shuffle(ops.map(o => ({...o, kind:'op'})));
+  const real = results.map(r => ({...r, kind:'res'}));
+  dressNum(V.ops, real);                                   // les formes des cartes d'abord…
+  let traps = makeTraps(V.ops, real).map(r => ({...r, kind:'res'})).slice(0, LIM.vis.traps);   // …pour choisir des pièges qui visent leurs erreurs
+  dressNum([], traps);
+  V.res = shuffle([...real, ...traps]);
+  V.sel = null; V.found = 0; V.round++;
+  const gO = $('#vOps'), gR = $('#vRes'); gO.innerHTML = ''; gR.innerHTML = '';
+  V.res.forEach(r => { r.el = cardEl('res', resFace(r), r.badge, r.group); r.el.onclick = () => visClick(r); gR.appendChild(r.el); });
+  V.ops.forEach(o => {
+    o.el = cardEl('op', opFace(o), o.badge, o.group); o.el.onclick = () => visClick(o);
+    if (o.review) o.el.querySelector('.face').insertAdjacentHTML('beforeend', '<span class="rev" title="calcul à revoir">🔁</span>');
+    gO.appendChild(o.el);
+  });
+}
+function visFit(){ if (V) { fit($('#vRes'), V.res.length); fit($('#vOps'), V.ops.length); } }
+function elapsed(){ return V.t0 ? Math.floor((Date.now() - V.t0) / 1000) : 0; }
+function visRender(){
+  [...V.ops, ...V.res].forEach(c => {
+    const cl = c.el.classList;
+    cl.toggle('done', !!c.done); cl.toggle('good', !!c.good); cl.toggle('bad', !!c.bad); cl.toggle('sel', V.sel === c);
+  });
+  $('#vPairs').textContent = V.type === 'chrono' ? `✅ ${V.ok}`
+    : `Paires : ${V.ok} / ${V.total}` + (V.nDonnes > 1 ? ` · donne ${V.round} / ${V.nDonnes}` : '');
+  $('#vErr').textContent = `❌ ${V.errors.length}`;
+  const t = $('#vTime');
+  if (V.type === 'chrono') {
+    const left = Math.max(0, 60 - elapsed());
+    t.className = 'stat chrono' + (V.t0 && left <= 10 ? ' hurry' : '');
+    t.textContent = V.t0 ? `⏱ ${fmt(left)}` : '⏱ 1:00 — touche une carte pour démarrer';
+  } else { t.className = 'stat'; t.textContent = '⏱ ' + fmt(elapsed()); }
+}
+function tick(){
+  visRender();
+  if (V.type === 'chrono' && elapsed() >= 60 && !V.over) visEnd();
+}
+function visClick(c){
+  if (V.lock || V.over || c.done) return;
+  if (!V.t0) { V.t0 = Date.now(); V.timer = setInterval(tick, 250); }
+  if (!V.sel || V.sel.kind === c.kind) { V.sel = (V.sel === c ? null : c); sTap(); visRender(); return; }
+  const op = c.kind === 'op' ? c : V.sel, rs = c.kind === 'res' ? c : V.sel;
+  V.lock = true;
+  if (!rs.trap && op.val === rs.val) {
+    op.good = rs.good = true; visRender(); sOk(); toast(pick(PRAISE), 'ok');
+    setTimeout(() => {
+      op.good = rs.good = false; op.done = true; rs.left--; if (rs.left <= 0) rs.done = true;
+      if (!V.track.has(opText(op))) V.track.set(opText(op), {op, missed:false});
+      if (op.sym === 'num') { const pr = pairPrinc(op, rs); V.princ[pr] = V.princ[pr] || {n:0, err:0}; V.princ[pr].n++; }
+      V.found++; V.ok++; V.sel = null; V.lock = false;
+      if (V.found === V.ops.length) {
+        if (V.type === 'libre' && !V.pool.length) { visRender(); visEnd(); return; }
+        toast('Nouvelle donne !', 'ok'); dealVis(); visFit();
+      }
+      visRender();
+    }, 450);
+  } else {
+    op.bad = rs.bad = true; V.errors.push(errText(op, rs)); V.track.set(opText(op), {op, missed:true});
+    if (op.sym === 'num') { const pr = errPrinc(op, rs); V.princ[pr] = V.princ[pr] || {n:0, err:0}; V.princ[pr].n++; V.princ[pr].err++; }
+    visRender(); sKo(); toast(pick(OOPS), 'ko');
+    setTimeout(() => { op.bad = rs.bad = false; V.sel = null; V.lock = false; visRender(); }, 700);
+  }
+}
+function visEnd(){
+  V.over = true; stopVis();
+  const chronoWasUnlocked = chronoUnlocked(V.name);
+  const secs = Math.min(elapsed(), V.type === 'chrono' ? 60 : 1e9), nE = V.errors.length;
+  const s = V.type === 'libre' ? {err:nE, secs} : {ok:V.ok, err:nE};
+  let res = null;
+  if (V.name) { res = saveScore(V.name, V.type, V.key, s); saveReview(V.name, V.track); savePrinc(V.name, V.princ); }
+  const princLine = Object.keys(V.princ).length ? `<p>${Object.entries(V.princ).map(([k, x]) => `${PRINC[k]} : <b>${x.err} erreur${x.err > 1 ? 's' : ''}</b> sur ${x.n}`).join(' · ')}</p>` : '';
+  const toReview = V.name ? Object.keys(getReview(V.name)) : [];
+  const unlockedNow = V.name && V.type === 'libre' && nE <= 2 && !chronoWasUnlocked;
+  // Étoiles : sans limite → selon les erreurs (2 erreurs tolérées, comme les ceintures) ;
+  // Top chrono → selon le record personnel
+  let nS;
+  if (V.type === 'libre') nS = nE === 0 ? 3 : nE <= 2 ? 2 : 1;
+  else if (!res || !res.prev || res.isRec) nS = 3;
+  else nS = V.ok >= res.prev.ok * .8 ? 2 : 1;
+  sWin(); confetti();
+  const head = V.type === 'libre'
+    ? `Tout associé en <b>${fmt(secs)}</b> avec <b>${plural(nE, 'erreur')}</b>.`
+    : `En 1 minute : <b>${plural(V.ok, 'association')} juste${V.ok > 1 ? 's' : ''}</b> et <b>${plural(nE, 'erreur')}</b>.`;
+  let recLine = '<p>✏️ Écris ton prénom dans le menu pour garder ton record.</p>';
+  if (res) {
+    recLine = res.isRec ? (res.prev ? `<p>⭐ Nouveau record ! Avant : ${scoreTxt(V.type, res.prev)}.</p>` : '<p>⭐ Premier record !</p>')
+                        : `<p>Ton record : ${scoreTxt(V.type, res.prev)}.</p>`;
+    if (res.hist.length > 1) recLine += `<div>Tes dernières parties :</div><div class="hist">${res.hist.map((h, i) =>
+      `<span class="${i === res.hist.length - 1 ? 'last' : ''}">${V.type === 'libre' ? `${h.err}✗ ${fmt(h.secs)}` : h.ok}</span>`).join('')}</div>`;
+  }
+  $('#vBest').textContent = V.name ? bestText(V.name, V.type) : '';
+  setTimeout(() => modal(`
+    <h2>${V.type === 'chrono' ? '⏱ Temps écoulé !' : "🎉 Pair'fait !"}</h2>${starsHTML(nS)}
+    <p class="big">${head}</p>${princLine}${recLine}
+    ${unlockedNow ? '<p>🔓 Bravo, tu as débloqué le <b>Top chrono</b> pour ces cartes !</p>' : ''}
+    ${nE ? `<div class="scoreCard" style="margin:12px auto 0;max-width:380px"><b>Mes erreurs</b><ul>${V.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>` : ''}
+    ${toReview.length ? `<p style="margin-top:10px">🔁 À revoir dans tes prochaines parties : ${toReview.join(' · ')}</p>` : ''}
+    <div class="row"><button class="btn primary" onclick="startMode()">↻ Rejouer</button>
+    <button class="btn" onclick="goMenu()">🏠 Menu</button></div>`), 300);
+}
+
+/* ================== À DEUX : LE DUEL ================== */
+let D = null;
+const errRule = () => cfg.win === 'first' ? 'keep' : cfg.err;
+function startDuo(){
+  stopVis();
+  // limite visuelle : on tire au hasard les cartes de la partie
+  const {ops, results} = groupResults(takeFrom(shuffle(buildSet().ops), LIM.duo).taken);
+  const players = [
+    {name:cfg.n0, color:'var(--p0)', hand:[], won:0, ok:0, errors:[]},
+    {name:cfg.n1, color:'var(--p1)', hand:[], won:0, ok:0, errors:[]}
+  ];
+  // Mains toujours égales : avec un nombre impair de calculs, une carte est mise de côté
+  const deck = shuffle(ops.map(o => ({...o})));
+  const aside = deck.length % 2 ? deck.pop() : null;
+  deck.forEach((o, i) => players[i % 2].hand.push(o));
+  let res = results.map(r => ({...r}));
+  if (aside) {
+    const r = res.find(x => x.val === aside.val); r.total--; r.left--;
+    if (r.total <= 0) res = res.filter(x => x !== r);   // son résultat n'a plus de calcul : on le retire du plateau
+  }
+  const hands = [...players[0].hand, ...players[1].hand];
+  dressNum(hands, res);
+  const traps = makeTraps(hands, res).slice(0, LIM.duo.traps); dressNum([], traps);
+  res = [...res, ...traps];
+  if (aside && numMode()) aside.face = numFace(aside.a, 'nombre');
+  const first = Math.random() < .5 ? 0 : 1;
+  D = {players, results:shuffle(res), turn:first, starter:first, sel:-1, lock:false, over:false, lastChance:false, firstOut:-1, aside};
+  const board = $('#dBoard'); board.innerHTML = '';
+  D.results.forEach(r => { r.el = cardEl('res', resFace(r), r.badge, r.group); r.el.onclick = () => duoPlay(r); board.appendChild(r.el); });
+  setLabels();
+  [0, 1].forEach(p => {
+    const h = $('#h' + p);
+    h.style.setProperty('--pc', players[p].color);
+    h.querySelector('.dot').style.background = players[p].color;
+    h.querySelector('.hn').textContent = players[p].name;
+  });
+  show('duo'); duoRender(true);
+  toast(`${players[first].name} commence !`);
+}
+function duoRender(refitBoard){
+  const P = D.players, cur = P[D.turn];
+  const t = $('#dTurn'); t.textContent = `À toi, ${cur.name} !`; t.style.background = cur.color;
+  $('#dLeft').textContent = `${numMode() ? 'Cartes restantes' : 'Calculs restants'} : ${P[0].hand.length + P[1].hand.length}`;
+  D.results.forEach(r => { const cl = r.el.classList; cl.toggle('done', !!r.done); cl.toggle('good', !!r.good); cl.toggle('bad', !!r.bad); });
+  [0, 1].forEach(p => {
+    const h = $('#h' + p), g = h.querySelector('.hg');
+    h.classList.toggle('active', p === D.turn); h.classList.toggle('waiting', p !== D.turn);
+    h.querySelector('.pli').textContent = `Pli : ${plural(P[p].won, 'carte')}`;
+    g.innerHTML = '';
+    if (!P[p].hand.length) { g.innerHTML = '<div class="empty">Plus de cartes</div>'; g.style.gridTemplateColumns = '1fr'; return; }
+    P[p].hand.forEach((o, i) => {
+      const el = cardEl('op', opFace(o), o.badge, o.group);
+      if (p === D.turn && i === D.sel) el.classList.add('sel');
+      if (o.bad) el.classList.add('bad');
+      el.onclick = () => {
+        if (D.lock || D.over) return;
+        if (p !== D.turn) { toast(`C'est le tour de ${cur.name}`); return; }
+        D.sel = (D.sel === i ? -1 : i); sTap(); duoRender();
+      };
+      g.appendChild(el);
+    });
+    requestAnimationFrame(() => fit(g, P[p].hand.length, 170, 8));
+  });
+  if (refitBoard) requestAnimationFrame(() => fit($('#dBoard'), D.results.length, 200));
+}
+function duoPlay(r){
+  if (D.lock || D.over || r.done) return;
+  const p = D.players[D.turn];
+  if (D.sel < 0) { toast('Choisis d’abord une carte calcul dans ta main'); return; }
+  const o = p.hand[D.sel];
+  D.lock = true;
+  if (!r.trap && o.val === r.val) {
+    r.good = true; duoRender(); sOk(); toast(`${pick(PRAISE)} ${opText(o)} = ${r.val}`, 'ok');
+    setTimeout(() => {
+      r.good = false; p.hand.splice(D.sel, 1); p.won++; p.ok++;
+      r.left--; if (r.left <= 0) { r.done = true; p.won++; }
+      if (cfg.win === 'first' && !p.hand.length) {
+        const other = 1 - D.turn, P = D.players;
+        if (D.lastChance) { D.over = true; duoRender(); duoEnd(D.firstOut, true); return; }     // les deux ont vidé leur main
+        if (D.turn === D.starter && P[other].hand.length) {                                    // dernier tour pour l'autre joueur
+          D.lastChance = true; D.firstOut = D.turn; D.sel = -1; D.turn = other; D.lock = false;
+          duoRender(); toast(`${p.name} a fini ! Dernier tour pour ${P[other].name}`, 'ok'); return;
+        }
+        D.over = true; duoRender(); duoEnd(D.turn); return;
+      }
+      nextTurn();
+    }, 1000);
+  } else {
+    r.bad = true; o.bad = true; duoRender(); sKo();
+    p.errors.push(errText(o, r));
+    toast(errRule() === 'lose' ? 'Raté ! La carte est perdue.' : 'Raté ! La carte revient dans ta main.', 'ko');
+    setTimeout(() => {
+      r.bad = false; o.bad = false;
+      if (errRule() === 'lose') p.hand.splice(D.sel, 1);
+      nextTurn();
+    }, 1200);
+  }
+}
+function nextTurn(){
+  D.sel = -1; D.lock = false;
+  const P = D.players;
+  if (D.lastChance) { D.over = true; duoRender(); duoEnd(D.firstOut); return; }   // le dernier tour n'a pas suffi
+  if (!P[0].hand.length && !P[1].hand.length) { D.over = true; duoRender(); duoEnd(); return; }
+  if (P[1 - D.turn].hand.length) D.turn = 1 - D.turn;
+  duoRender();
+}
+function duoEnd(firstOut, tie){
+  const P = D.players;
+  const w = tie ? -1 : firstOut !== undefined ? firstOut : (P[0].won === P[1].won ? -1 : (P[0].won > P[1].won ? 0 : 1));
+  let sub = tie ? 'Les deux joueurs ont vidé leur main !'
+          : firstOut !== undefined ? `${P[w].name} n'a plus de cartes en main.` : 'On compte les cartes du pli…';
+  if (D.aside) sub += `<br><small>Carte mise de côté pour avoir des mains égales : ${D.aside.sym === 'num' ? D.aside.a : opText(D.aside)}</small>`;
+  const card = (pl, i) => `<div class="scoreCard ${i === w ? 'win' : ''}">
+      <h3 style="color:${pl.color}">${esc(pl.name)}</h3>
+      <div class="n">${firstOut !== undefined ? plural(pl.hand.length, 'carte') + ' en main' : plural(pl.won, 'carte')}</div>
+      <div>✅ ${plural(pl.ok, 'association')} juste${pl.ok > 1 ? 's' : ''}</div>
+      <div>❌ ${plural(pl.errors.length, 'erreur')}</div>
+      ${pl.errors.length ? `<ul>${pl.errors.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
+    </div>`;
+  sWin(); confetti();
+  setTimeout(() => modal(`
+    <h2>${w < 0 ? '🤝 Égalité !' : `🏆 ${esc(P[w].name)} gagne !`}</h2>
+    <p class="big">${sub}</p>
+    <div class="scores">${P.map(card).join('')}</div>
+    <div class="row"><button class="btn primary" onclick="startMode()">↻ Rejouer</button>
+    <button class="btn" onclick="goMenu()">🏠 Menu</button></div>`), 500);
+}
+
+/* ================== DIVERS ================== */
+let rz;
+window.addEventListener('resize', () => {
+  clearTimeout(rz);
+  rz = setTimeout(() => {
+    if ($('#vis').classList.contains('on')) visFit();
+    if ($('#duo').classList.contains('on') && D) duoRender(true);
+  }, 120);
+});
+refreshMute();
+renderSetup();
+</script>
+<script data-goatcounter="https://euryale.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
