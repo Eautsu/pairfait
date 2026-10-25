@@ -111,7 +111,7 @@ Pair'fait s'inscrit dans un ensemble d'outils conçus pour la même classe, qui 
 
 | Outil | Rôle | Lien |
 |---|---|---|
-| **Générateur de grilles de calcul mental** | Produire soi-même les réponses (complément de Pair'fait, qui entraîne à reconnaître) | [Ouvrir](https://eautsu.github.io/ceinture_calcul_mental/)) |
+| **Générateur de grilles de calcul mental** | Produire soi-même les réponses (complément de Pair'fait, qui entraîne à reconnaître) | [Ouvrir](https://eautsu.github.io/ceinture_calcul_mental/) . [Dépôt](https://github.com/Eautsu/ceinture_calcul_mental) |
 | **Ceintures de calcul posé** | Additions, soustractions et multiplications posées, de la ceinture blanche à la dorée | [Ouvrir](https://eautsu.github.io/Ceintures_calculs_poses/) · [Dépôt](https://github.com/Eautsu/Ceintures_calculs_poses) |
 | **Ceintures de résolution de problèmes** | Problèmes classés par famille (parties-tout, transformation, comparaison, multiplicatif) | [Ouvrir](https://eautsu.github.io/ceintures_problemes/) · [Dépôt](https://github.com/Eautsu/ceintures_problemes) |
 
